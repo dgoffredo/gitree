@@ -36,12 +36,17 @@ repo="$(realpath "$(git rev-parse --show-toplevel)")"
 # objects (e.g. SHA-1 hashes), rather than only branches and tags.
 git config --add uploadpack.allowReachableSHA1InWant true
 
+# shhhhhh
+quiet() {
+    >/dev/null 2>/dev/null "$@"
+}
+
 # See https://stackoverflow.com/questions/31278902/
 cd "$destdir"
-git init . --quiet
+quiet git init .
 # Don't warn me about being in a detached head state.
-git config --add advice.detachedHead false
-git remote add origin "$repo/.git"
-git fetch --quiet --depth 1 origin "$sha"
-git checkout FETCH_HEAD --quiet
-git submodule update --init --depth 1 --recursive --quiet
+quiet git config --add advice.detachedHead false
+quiet git remote add origin "$repo/.git"
+quiet git fetch --depth 1 origin "$sha"
+quiet git checkout FETCH_HEAD 
+quiet git submodule update --init --depth 1 --recursive
