@@ -12,7 +12,7 @@ REFSPEC is a git refspec, such as a branch name, SHA-1 object ID,
 offset from HEAD, etc. This is the tree that will be copied.
 
 DESTDIR is the path to a directory that will be the root of the
-written tree.
+written tree. The directory must exist and not be a git respository.
 
 The --help flag prints this message.
 END_USAGE
