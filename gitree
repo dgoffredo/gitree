@@ -1,0 +1,47 @@
+#!/bin/sh
+
+set -e # exit if any command fails
+
+usage() {
+    cat <<END_USAGE
+gitree - copy a git tree into a specified directory
+
+Usage: $0 REFSPEC DESTDIR
+
+REFSPEC is a git refspec, such as a branch name, SHA-1 object ID,
+offset from HEAD, etc. This is the tree that will be copied.
+
+DESTDIR is the path to a directory that will be the root of the
+written tree.
+
+The --help flag prints this message.
+END_USAGE
+}
+
+if [ $# -eq 1 -a \( "$1" = "-h" -o "$1" = "--help" -o "$1" = "-help" \) ]; then
+    usage
+    exit
+elif [ $# -eq 2 ]; then
+    refspec="$1"
+    destdir="$2"
+else
+    usage >&2
+    exit 1
+fi
+
+sha="$(git rev-parse "$refspec")"
+repo="$(realpath "$(git rev-parse --show-toplevel)")"
+
+# Configure this repository to allow fetches from it specifying arbitrary
+# objects (e.g. SHA-1 hashes), rather than only branches and tags.
+git config --add uploadpack.allowReachableSHA1InWant true
+
+# See https://stackoverflow.com/questions/31278902/
+cd "$destdir"
+git init . --quiet
+# Don't warn me about being in a detached head state.
+git config --add advice.detachedHead false
+git remote add origin "$repo/.git"
+git fetch --quiet --depth 1 origin "$sha"
+git checkout FETCH_HEAD --quiet
+git submodule update --init --depth 1 --recursive --quiet
